@@ -26,18 +26,31 @@ app.get("/api/hello", function (req, res) {
 
 // api end points for showing timestamp
 app.get("/api/:date?", (req, res) => {
-  let inputDate = parseInt(req.params.date);
-
-  if (!inputDate) {
-    res.json({ unix: new Date().valueOf(), utc: new Date().toUTCString() });
+  // Extract date parameter from request 
+  const dateParam = req.params.date;
+  // Initialize variable to hold date object
+  let dateObject;
+  // if no date parameter is provided, use current date
+  if (!dateParam) {
+    dateObject = new Date();
   }
-
-  if (inputDate) {
-    res.json({ unitx: inputDate, utc: new Date(inputDate).toUTCString() })
-  } else {
-    res.json({ error: "Invalid Date" })
+  // if parameter is in unix timestamp format(5 or more digits), then convert it to a date object
+  else if (/\d{5,}/.test(dateParam)) {
+    dateObject = new Date(parseInt(dateParam));
   }
-})
+  // if date parameter in a string, then convert it to  a date object 
+  else {
+    dateObject = new Date(dateParam);
+  }
+  // if date object is invalid, return a error response ({ error: "Invalid Date" })
+  if (isNaN(dateObject)) {
+    return res.json({ error: "Invalid Date" });
+  }
+  // if date is valid, return unix timestamp and utc string
+  else {
+    return res.json({ unix: dateObject.getTime(), utc: dateObject.toUTCString() });
+  }
+});
 
 
 // Listen on port set in environment variable or default to 3000
